@@ -1,12 +1,22 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Task, Priority, AppData } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to safely get the AI instance. 
+// We initialize it lazily (inside functions) so the app doesn't crash on startup 
+// if process.env.API_KEY is missing or undefined.
+const getAi = () => {
+  const apiKey = process.env.API_KEY || '';
+  if (!apiKey) {
+    console.warn("API_KEY is missing. Gemini features will not work.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
-// Helper to generate a unique ID (simple implementation for generated content)
+// Helper to generate a unique ID
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
 export const generateDailyPlan = async (rawText: string, dateStr: string): Promise<Task[]> => {
+  const ai = getAi();
   const prompt = `
     You are an expert productivity assistant. 
     The user has provided a raw brain dump of their plans for the day (${dateStr}).
@@ -69,6 +79,7 @@ export const generateDailyPlan = async (rawText: string, dateStr: string): Promi
 };
 
 export const suggestSubtasks = async (taskTitle: string): Promise<string[]> => {
+  const ai = getAi();
   const prompt = `Break down the task "${taskTitle}" into 3-5 actionable subtasks. Return only the subtask titles as a JSON array of strings. **The Output must be in Simplified Chinese (简体中文).**`;
 
   try {
@@ -92,6 +103,7 @@ export const suggestSubtasks = async (taskTitle: string): Promise<string[]> => {
 };
 
 export const analyzeHealthData = async (data: AppData): Promise<string> => {
+  const ai = getAi();
   // Extract last 14 days of data to keep payload reasonable
   const recentSteps = data.stepLogs.slice(-14);
   const recentWeight = data.weightHistory.slice(-14);

@@ -348,12 +348,21 @@ const DailyView: React.FC<DailyViewProps> = ({
                  )}
 
                  {daysEvents.length > 0 && (
-                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-50 w-max max-w-[120px]">
-                      <div className="bg-gray-800 text-white text-[10px] rounded px-2 py-1 shadow-lg text-center leading-tight">
-                          {daysEvents.map(ev => (
-                              <div key={ev.id} className="whitespace-nowrap">{getEventIcon(date)} {ev.title}</div>
+                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max min-w-[100px] animate-in fade-in zoom-in-95 duration-200">
+                      <div className="bg-white/90 backdrop-blur-md text-r-main text-xs rounded-xl p-2 shadow-xl border border-r-border/50 text-left">
+                          {daysEvents.map((ev, i) => (
+                              <div key={ev.id} className={`flex items-start gap-2 ${i > 0 ? 'mt-2 pt-2 border-t border-r-border/30' : ''}`}>
+                                  <span className="text-lg leading-none">{getEventIcon(date)}</span>
+                                  <div>
+                                     <div className="font-bold">{ev.title}</div>
+                                     <div className="text-[10px] text-r-sub opacity-80 border border-r-primary/30 rounded px-1 inline-block mt-0.5">
+                                       {ev.type === 'birthday' ? '生日' : ev.type === 'holiday' ? '节日' : ev.type === 'anniversary' ? '纪念日' : '其他'}
+                                     </div>
+                                  </div>
+                              </div>
                           ))}
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                          {/* Arrow */}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-white/90 drop-shadow-sm"></div>
                       </div>
                    </div>
                  )}
