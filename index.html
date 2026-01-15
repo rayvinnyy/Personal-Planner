@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>懒熊生活计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              r: {
+                base: 'var(--color-base)',
+                card: 'var(--color-card)',
+                border: 'var(--color-border)',
+                light: 'var(--color-light)',
+                primary: 'var(--color-primary)',
+                'primary-hover': 'var(--color-primary-hover)',
+                main: 'var(--color-text-main)',
+                sub: 'var(--color-text-sub)',
+                muted: 'var(--color-text-muted)',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Quicksand', 'GenyoMin', '兰阳明体', 'Noto Serif SC', 'Songti SC', serif;
+      }
+      
+      /* THEME VARIABLES */
+      :root {
+        /* Default / Original (Beige) */
+        --color-base: #FEF9E7;
+        --color-card: #FFF8E1;
+        --color-border: #FDEBD0;
+        --color-light: #FFF3E0;
+        --color-primary: #F5CBA7;
+        --color-primary-hover: #EDBB99;
+        --color-text-main: #5D4037;
+        --color-text-sub: #8D6E63;
+        --color-text-muted: #D7BDE2;
+      }
+
+      body.theme-pink {
+        --color-base: #FFF0F5;
+        --color-card: #FFF5F8;
+        --color-border: #F8BBD0;
+        --color-light: #FCE4EC;
+        --color-primary: #F48FB1;
+        --color-primary-hover: #F06292;
+        --color-text-main: #880E4F;
+        --color-text-sub: #AD1457;
+        --color-text-muted: #E1BEE7;
+      }
+
+      body.theme-purple {
+        --color-base: #F3E5F5;
+        --color-card: #F8BBD0;
+        --color-border: #E1BEE7;
+        --color-light: #F3E5F5;
+        --color-primary: #CE93D8;
+        --color-primary-hover: #BA68C8;
+        --color-text-main: #4A148C;
+        --color-text-sub: #7B1FA2;
+        --color-text-muted: #D1C4E9;
+      }
+
+      body.theme-blue {
+        --color-base: #E3F2FD;
+        --color-card: #FCE4EC; /* Mix pink card for contrast */
+        --color-border: #BBDEFB;
+        --color-light: #E1F5FE;
+        --color-primary: #90CAF9;
+        --color-primary-hover: #64B5F6;
+        --color-text-main: #0D47A1;
+        --color-text-sub: #1976D2;
+        --color-text-muted: #B3E5FC;
+      }
+
+      body.theme-green {
+        --color-base: #E8F5E9;
+        --color-card: #F1F8E9;
+        --color-border: #C8E6C9;
+        --color-light: #E0F2F1;
+        --color-primary: #A5D6A7;
+        --color-primary-hover: #81C784;
+        --color-text-main: #1B5E20;
+        --color-text-sub: #388E3C;
+        --color-text-muted: #C8E6C9;
+      }
+
+      body.theme-yellow {
+        --color-base: #FFFDE7;
+        --color-card: #FFF9C4;
+        --color-border: #FFF59D;
+        --color-light: #FFFDE7;
+        --color-primary: #FFE082;
+        --color-primary-hover: #FFD54F;
+        --color-text-main: #F57F17;
+        --color-text-sub: #FBC02D;
+        --color-text-muted: #FFF176;
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: var(--color-text-muted);
+        border-radius: 20px;
+      }
+      
+      .bear-card {
+        background: var(--color-card); /* was #FFF */
+        border-radius: 24px;
+        border: 2px solid var(--color-border);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lunar-javascript": "https://esm.sh/lunar-javascript@1.6.12",
+    "xlsx": "https://esm.sh/xlsx@0.18.5"
+  }
+}
+</script>
+</head>
+  <body class="bg-r-base text-r-main antialiased h-screen overflow-hidden selection:bg-r-primary selection:text-r-main transition-colors duration-500">
+    <div id="root" class="h-full flex flex-col"></div>
+  </body>
+</html>

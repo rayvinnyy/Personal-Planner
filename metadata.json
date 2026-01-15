@@ -1,0 +1,5 @@
+{
+  "name": "DayStream AI Planner",
+  "description": "An intelligent daily planner and to-do list application powered by Gemini. Organize your day, set reminders, and generate structured schedules from simple text inputs.",
+  "requestFramePermissions": []
+}
