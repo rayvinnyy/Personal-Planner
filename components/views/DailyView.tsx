@@ -213,9 +213,17 @@ const DailyView: React.FC<DailyViewProps> = ({
           </div>
 
           {dayTasks.length === 0 ? (
-            <div className="text-center py-10 opacity-50 bg-r-card/50 rounded-2xl border-2 border-dashed border-r-border">
-              <CheckCircle2 size={40} className="mx-auto mb-2 text-r-muted" />
-              <p className="text-sm">暂无任务，添加一个吧！</p>
+            <div className="flex flex-col items-center justify-center py-12 opacity-60">
+               <div className="w-12 h-12 bg-r-card rounded-full flex items-center justify-center mb-3">
+                 <CalendarDays size={20} className="text-r-sub" />
+               </div>
+               <p className="text-sm text-r-sub font-bold">暂无任务，添加一个吧！</p>
+               <button 
+                  onClick={() => onOpenAddTask('daily', targetDateStr)}
+                  className="mt-3 text-xs bg-white border border-r-border px-4 py-1.5 rounded-full text-r-main shadow-sm hover:bg-r-primary hover:border-r-primary hover:text-white transition-all"
+               >
+                 + 立即添加
+               </button>
             </div>
           ) : (
             <div className="space-y-3">
