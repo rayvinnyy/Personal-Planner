@@ -2,8 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>懒熊生活计划</title>
+    
+    <!-- iOS / PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="懒熊计划">
+    
+    <!-- Rilakkuma Head Icon (SVG Base64) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iI0ZFRjlFNyIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIDQwKSI+PGNpcmNsZSBjeD0iMTMwIiBjeT0iMTMwIiByPSI2NSIgZmlsbD0iI0QyOUI2OSIvPjxjaXJjbGUgY3g9IjEzMCIgY3k9IjEzMCIgcj0iNDAiIGZpbGw9IiNGREQ4MzUiLz48Y2lyY2xlIGN4PSIzODIiIGN5PSIxMzAiIHI9IjY1IiBmaWxsPSIjRDI5QjY5Ii8+PGNpcmNsZSBjeD0iMzgyIiBjeT0iMTMwIiByPSI0MCIgZmlsbD0iI0ZERDgzNSIvPjxwYXRoIGQ9Ik0xMjAgMTUwIEggMzkyIEMgNDUwIDE1MCA0NzAgMjAwIDQ3MCAyNzAgQyA0NzAgMzgwIDQxMCA0NDAgMjU2IDQ0MCBDIDEwMiA0NDAgNDIgMzgwIDQyIDI3MCBDIDQyIDIwMCA2MiAxNTAgMTIwIDE1MCBaIiBmaWxsPSIjRDI5QjY5Ii8+PGVsbGlXBzZSBjeD0iMjU2IiBjeT0iMjkwIiByeD0iODUiIHJ5PSI2MCIgZmlsbD0iI0ZGRkZGRiIvPjxjaXJjbGUgY3g9“MTkwIiBjeT0iMjYwIiByPSIxNiIgZmlsbD0iIzNFMjcyMyIvPjxjaXJjbGUgY3g9IjMyMiIgY3k9“MjYwIiByPSIxNiIgZmlsbD0iIzNFMjcyMyIvPjxwYXRoIGQ9Ik0gMjQ2IDI4NSBMIDI2NiAyODUgTCAyNTYgMzAwIFoiIGZpbGw9IiMzRTI3MjMiIHN0cm9rZT0iIzNFMjcyMyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTSAyNTYgMzAwIEwgMjU2IDMzMCBNIDI1NiAzMzAgTCAyMzYgMzUwIE0gMjU2IDMzMCBMIDI3NiAzNTAiIHN0cm9rZT0iIzNFMjcyMyIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiLz48L2c+PC9zdmc+" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iI0ZFRjlFNyIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIDQwKSI+PGNpcmNsZSBjeD0iMTMwIiBjeT0iMTMwIiByPSI2NSIgZmlsbD0iI0QyOUI2OSIvPjxjaXJjbGUgY3g9IjEzMCIgY3k9IjEzMCIgcj0iNDAiIGZpbGw9IiNGREQ4MzUiLz48Y2lyY2xlIGN4PSIzODIiIGN5PSIxMzAiIHI9IjY1IiBmaWxsPSIjRDI5QjY5Ii8+PGNpcmNsZSBjeD0iMzgyIiBjeT0iMTMwIiByPSI0MCIgZmlsbD0iI0ZERDgzNSIvPjxwYXRoIGQ9Ik0xMjAgMTUwIEggMzkyIEMgNDUwIDE1MCA0NzAgMjAwIDQ3MCAyNzAgQyA0NzAgMzgwIDQxMCA0NDAgMjU2IDQ0MCBDIDEwMiA0NDAgNDIgMzgwIDQyIDI3MCBDIDQyIDIwMCA2MiAxNTAgMTIwIDE1MCBaIiBmaWxsPSIjRDI5QjY5Ii8+PGVsbGlXBzZSBjeD0iMjU2IiBjeT0iMjkwIiByeD0iODUiIHJ5PSI2MCIgZmlsbD0iI0ZGRkZGRiIvPjxjaXJjbGUgY3g9“MTkwIiBjeT0iMjYwIiByPSIxNiIgZmlsbD0iIzNFMjcyMyIvPjxjaXJjbGUgY3g9IjMyMiIgY3k9“MjYwIiByPSIxNiIgZmlsbD0iIzNFMjcyMyIvPjxwYXRoIGQ9Ik0gMjQ2IDI4NSBMIDI2NiAyODUgTCAyNTYgMzAwIFoiIGZpbGw9IiMzRTI3MjMiIHN0cm9rZT0iIzNFMjcyMyIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTSAyNTYgMzAwIEwgMjU2IDMzMCBNIDI1NiAzMzAgTCAyMzYgMzUwIE0gMjU2IDMzMCBMIDI3NiAzNTAiIHN0cm9rZT0iIzNFMjcyMyIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiLz48L2c+PC9zdmc+" />
+
     <script>
       // Robust Polyfill for process.env to prevent crashes in browser environments
       window.process = window.process || {};
