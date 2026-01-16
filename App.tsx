@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Task, Priority, AppData, PlanType, ThemeType, Checklist } from './types';
-import { saveData, loadData, DEFAULT_DATA } from './services/storageService';
+import { saveData, loadData, DEFAULT_DATA, saveStoredApiKey } from './services/storageService';
 import { analyzeHealthData } from './services/geminiService';
 import Modal from './components/ui/Modal';
 import PlanGenerator from './components/PlanGenerator';
@@ -191,6 +192,10 @@ const App: React.FC = () => {
     } else {
       alert("请先开启通知权限。");
     }
+  };
+
+  const handleSaveApiKey = (key: string) => {
+    saveStoredApiKey(key);
   };
 
   // Task Handlers
@@ -437,6 +442,7 @@ const App: React.FC = () => {
             onResetData={handleResetData}
             onRequestNotification={handleRequestNotification}
             onTestNotification={handleTestNotification}
+            onSaveApiKey={handleSaveApiKey}
           />
         )}
       </main>

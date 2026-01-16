@@ -1,6 +1,8 @@
-import React, { useRef } from 'react';
-import { Check, Image as ImageIcon, RotateCcw, Palette, Upload, Download, FileJson, Trash2, Bell } from 'lucide-react';
+
+import React, { useRef, useState, useEffect } from 'react';
+import { Check, Image as ImageIcon, RotateCcw, Palette, Upload, Download, FileJson, Trash2, Bell, Key, Eye, EyeOff } from 'lucide-react';
 import { ThemeType } from '../../types';
+import { getStoredApiKey } from '../../services/storageService';
 
 interface SettingsViewProps {
   currentTheme: ThemeType;
@@ -13,6 +15,7 @@ interface SettingsViewProps {
   onResetData: () => void;
   onRequestNotification: () => void;
   onTestNotification: () => void;
+  onSaveApiKey: (key: string) => void;
 }
 
 const SettingsView: React.FC<SettingsViewProps> = ({
@@ -25,10 +28,30 @@ const SettingsView: React.FC<SettingsViewProps> = ({
   onImportData,
   onResetData,
   onRequestNotification,
-  onTestNotification
+  onTestNotification,
+  onSaveApiKey
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
+  
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [isKeySaved, setIsKeySaved] = useState(false);
+
+  useEffect(() => {
+    // Load existing key for placeholder state (don't show actual key for security if we want, but showing it masked is fine)
+    const stored = getStoredApiKey();
+    if (stored) {
+      setApiKeyInput(stored);
+      setIsKeySaved(true);
+    }
+  }, []);
+
+  const handleSaveKey = () => {
+    onSaveApiKey(apiKeyInput.trim());
+    setIsKeySaved(true);
+    alert("API Key 已保存！");
+  };
 
   const themes: { id: ThemeType; name: string; color: string }[] = [
     { id: 'original', name: '经典懒熊', color: '#F5CBA7' },
@@ -42,6 +65,50 @@ const SettingsView: React.FC<SettingsViewProps> = ({
   return (
     <div className="space-y-6 pb-20">
       <h2 className="text-2xl font-bold text-r-main mb-4">设置</h2>
+
+      {/* API Key Section */}
+      <div className="bear-card p-5 bg-white border-2 border-r-primary/30">
+        <div className="flex items-center gap-2 mb-4 text-r-main">
+          <Key size={20} className="text-r-primary" />
+          <h3 className="font-bold text-lg">AI 设置 (API Key)</h3>
+        </div>
+        <div className="space-y-3">
+           <p className="text-xs text-r-sub">
+             请输入 Google Gemini API Key 以启用 AI 计划生成和健康分析功能。
+             <br/>
+             <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="underline text-r-primary hover:text-r-primary-hover">
+               点击这里获取免费 Key
+             </a>
+           </p>
+           <div className="flex items-center gap-2">
+             <div className="relative flex-1">
+               <input 
+                 type={showApiKey ? "text" : "password"} 
+                 value={apiKeyInput}
+                 onChange={(e) => { setApiKeyInput(e.target.value); setIsKeySaved(false); }}
+                 className="w-full p-3 pr-10 rounded-xl border border-r-border bg-gray-50 focus:border-r-primary outline-none text-r-main text-sm font-mono"
+                 placeholder="粘贴 API Key..."
+               />
+               <button 
+                 onClick={() => setShowApiKey(!showApiKey)}
+                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-r-sub"
+               >
+                 {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
+               </button>
+             </div>
+             <button 
+               onClick={handleSaveKey}
+               className={`px-4 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
+                 isKeySaved 
+                   ? 'bg-green-100 text-green-600 border border-green-200' 
+                   : 'bg-r-primary text-r-main hover:opacity-90 shadow-sm'
+               }`}
+             >
+               {isKeySaved ? '已保存' : '保存'}
+             </button>
+           </div>
+        </div>
+      </div>
 
       {/* Notification Section */}
       <div className="bear-card p-5 bg-white">
@@ -180,7 +247,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* Info Section */}
       <div className="text-center mt-8 opacity-50">
-        <p className="text-xs text-r-sub">Rilakkuma Life Planner v1.1</p>
+        <p className="text-xs text-r-sub">Rilakkuma Life Planner v1.2</p>
         <p className="text-[10px] text-r-muted mt-1">Make every day relaxed & productive.</p>
       </div>
     </div>

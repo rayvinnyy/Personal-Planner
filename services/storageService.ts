@@ -1,6 +1,8 @@
+
 import { AppData } from '../types';
 
 const STORAGE_KEY = 'rilakkuma_life_v1';
+const API_KEY_STORAGE_KEY = 'gemini_api_key';
 
 export const DEFAULT_DATA: AppData = {
   tasks: [],
@@ -42,5 +44,21 @@ export const loadData = (): AppData => {
   } catch (error) {
     console.error('Failed to load data from local storage', error);
     return DEFAULT_DATA;
+  }
+};
+
+export const getStoredApiKey = (): string => {
+  try {
+    return localStorage.getItem(API_KEY_STORAGE_KEY) || '';
+  } catch {
+    return '';
+  }
+};
+
+export const saveStoredApiKey = (key: string): void => {
+  try {
+    localStorage.setItem(API_KEY_STORAGE_KEY, key);
+  } catch (error) {
+    console.error('Failed to save API key', error);
   }
 };

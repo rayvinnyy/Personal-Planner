@@ -1,11 +1,16 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Task, Priority, AppData } from "../types";
+import { getStoredApiKey } from "./storageService";
 
 // Helper to safely get the AI instance. 
 // We initialize it lazily (inside functions) so the app doesn't crash on startup 
 // if process.env.API_KEY is missing or undefined.
+// Priority: Local Storage (User Input) > Environment Variable (Deployment Config)
 const getAi = () => {
-  const apiKey = process.env.API_KEY || '';
+  const storedKey = getStoredApiKey();
+  const apiKey = storedKey || process.env.API_KEY || '';
+  
   if (!apiKey) {
     console.warn("API_KEY is missing. Gemini features will not work.");
   }
