@@ -277,6 +277,7 @@ const App: React.FC = () => {
   const handleAddChecklist = (checklist: any) => updateData({ checklists: [...(data.checklists || []), { ...checklist, id: Date.now().toString(), items: [] }] });
   const handleUpdateChecklist = (id: string, updates: any) => updateData({ checklists: (data.checklists || []).map(c => c.id === id ? { ...c, ...updates } : c) });
   const handleDeleteChecklist = (id: string) => updateData({ checklists: (data.checklists || []).filter(c => c.id !== id) });
+  const handleReorderChecklists = (newChecklists: Checklist[]) => updateData({ checklists: newChecklists });
 
   const handleAddRestaurant = (restaurant: any) => updateData({ restaurants: [...data.restaurants, { ...restaurant, id: Date.now().toString() }] });
   const handleUpdateRestaurant = (id: string, updates: any) => updateData({ restaurants: data.restaurants.map(r => r.id === id ? { ...r, ...updates } : r) });
@@ -408,6 +409,7 @@ const App: React.FC = () => {
             onAddChecklist={handleAddChecklist}
             onUpdateChecklist={handleUpdateChecklist}
             onDeleteChecklist={handleDeleteChecklist}
+            onReorderChecklists={handleReorderChecklists}
           />
         )}
         {activeTab === 'life' && (

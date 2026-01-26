@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Receipt, Ticket, Plus, Trash2, CheckCircle, Edit2, ListChecks, Check, X } from 'lucide-react';
+import { Receipt, Ticket, Plus, Trash2, CheckCircle, Edit2, ListChecks, Check, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { Bill, Coupon, Checklist, ChecklistItem } from '../../types';
 
 interface WalletViewProps {
@@ -17,13 +18,15 @@ interface WalletViewProps {
   onAddChecklist: (checklist: Omit<Checklist, 'id' | 'items'>) => void;
   onUpdateChecklist: (id: string, updates: Partial<Checklist>) => void;
   onDeleteChecklist: (id: string) => void;
+  onReorderChecklists: (checklists: Checklist[]) => void;
 }
 
 const WalletView: React.FC<WalletViewProps> = ({ 
   bills, coupons, checklists,
   onAddBill, onUpdateBill, onPayBill, onDeleteBill, 
   onAddCoupon, onUpdateCoupon, onUseCoupon, onDeleteCoupon,
-  onAddChecklist, onUpdateChecklist, onDeleteChecklist
+  onAddChecklist, onUpdateChecklist, onDeleteChecklist,
+  onReorderChecklists
 }) => {
   const [activeTab, setActiveTab] = useState<'bills' | 'coupons' | 'checklists'>('bills');
   const [showForm, setShowForm] = useState(false);
@@ -35,6 +38,10 @@ const WalletView: React.FC<WalletViewProps> = ({
   
   // Checklist internal state for new items
   const [newItemTexts, setNewItemTexts] = useState<Record<string, string>>({});
+  
+  // Checklist Item Editing State
+  const [editingItem, setEditingItem] = useState<{ listId: string, itemId: string } | null>(null);
+  const [editingText, setEditingText] = useState('');
 
   const resetForm = () => {
     setTitle(''); setAmountOrCode(''); setDate(''); setEditId(null); setShowForm(false);
@@ -42,10 +49,10 @@ const WalletView: React.FC<WalletViewProps> = ({
   const openAdd = () => { resetForm(); setShowForm(true); };
   const openEditBill = (b: Bill) => { setActiveTab('bills'); setTitle(b.title); setAmountOrCode(b.amount.toString()); setDate(b.dueDate); setEditId(b.id); setShowForm(true); };
   const openEditCoupon = (c: Coupon) => { setActiveTab('coupons'); setTitle(c.title); setAmountOrCode(c.code || ''); setDate(c.expiryDate); setEditId(c.id); setShowForm(true); };
+  const openEditChecklist = (l: Checklist) => { setActiveTab('checklists'); setTitle(l.title); setEditId(l.id); setShowForm(true); };
 
   const handleSave = () => {
-    if (!title && activeTab !== 'checklists') return; // Checklists only need title
-    if (!title && activeTab === 'checklists') return; 
+    if (!title) return;
 
     if (activeTab === 'bills') {
       const billData = { title, amount: parseFloat(amountOrCode) || 0, dueDate: date };
@@ -54,12 +61,11 @@ const WalletView: React.FC<WalletViewProps> = ({
       const couponData = { title, expiryDate: date, code: amountOrCode };
       editId ? onUpdateCoupon(editId, couponData) : onAddCoupon(couponData);
     } else if (activeTab === 'checklists') {
-      // Create new checklist
-      const checklistData = { title, items: [] };
-      // Editing existing checklist title is not implemented in this simplified flow, mostly for creation
-      // But if editId exists, we could update title. 
-      // For now, let's just support creating new lists via the main button.
-      onAddChecklist(checklistData);
+      if (editId) {
+        onUpdateChecklist(editId, { title });
+      } else {
+        onAddChecklist({ title, items: [] });
+      }
     }
     resetForm();
   };
@@ -89,6 +95,40 @@ const WalletView: React.FC<WalletViewProps> = ({
     if (!list) return;
     const updatedItems = list.items.filter(item => item.id !== itemId);
     onUpdateChecklist(listId, { items: updatedItems });
+  };
+
+  const handleStartEditItem = (listId: string, itemId: string, text: string) => {
+    setEditingItem({ listId, itemId });
+    setEditingText(text);
+  };
+
+  const handleSaveItemEdit = () => {
+    if (!editingItem) return;
+    const { listId, itemId } = editingItem;
+    
+    // If empty, we can choose to delete or just cancel edit. Let's keep it if not empty, otherwise cancel.
+    if (editingText.trim()) {
+      const list = checklists.find(c => c.id === listId);
+      if (list) {
+        const updatedItems = list.items.map(item => item.id === itemId ? { ...item, text: editingText.trim() } : item);
+        onUpdateChecklist(listId, { items: updatedItems });
+      }
+    }
+    
+    setEditingItem(null);
+    setEditingText('');
+  };
+
+  const moveChecklist = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === checklists.length - 1) return;
+    
+    const newList = [...checklists];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    [newList[index], newList[targetIndex]] = [newList[targetIndex], newList[index]];
+    
+    onReorderChecklists(newList);
   };
 
   return (
@@ -150,26 +190,70 @@ const WalletView: React.FC<WalletViewProps> = ({
                   <p className="text-sm">暂无清单，添加一个购物列表吧！</p>
                 </div>
               )}
-              {checklists.map(list => (
+              {checklists.map((list, index) => (
                 <div key={list.id} className="bear-card p-4 bg-[#FFF9C4] relative shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-2 border-b border-black/5 pb-2">
-                       <h3 className="font-bold text-r-main text-lg">{list.title}</h3>
-                       <button onClick={() => onDeleteChecklist(list.id)} className="text-gray-400 hover:text-red-500"><Trash2 size={16}/></button>
+                       <div className="flex items-center gap-2 flex-1">
+                          <h3 className="font-bold text-r-main text-lg">{list.title}</h3>
+                          <button onClick={() => openEditChecklist(list)} className="text-r-sub/50 hover:text-r-main p-1 transition-colors">
+                             <Edit2 size={14} />
+                          </button>
+                       </div>
+                       <div className="flex gap-1 items-center">
+                         <div className="flex flex-col mr-1">
+                           <button 
+                              onClick={() => moveChecklist(index, 'up')} 
+                              disabled={index === 0}
+                              className={`text-r-sub hover:text-r-main disabled:opacity-20 ${index === 0 ? 'cursor-not-allowed' : ''}`}
+                           >
+                             <ArrowUp size={14} />
+                           </button>
+                           <button 
+                              onClick={() => moveChecklist(index, 'down')} 
+                              disabled={index === checklists.length - 1}
+                              className={`text-r-sub hover:text-r-main disabled:opacity-20 ${index === checklists.length - 1 ? 'cursor-not-allowed' : ''}`}
+                           >
+                             <ArrowDown size={14} />
+                           </button>
+                         </div>
+                         <button onClick={() => onDeleteChecklist(list.id)} className="text-gray-400 hover:text-red-500 ml-1"><Trash2 size={16}/></button>
+                       </div>
                     </div>
                     
                     <div className="space-y-1.5 mb-3 min-h-[50px]">
                       {list.items.length === 0 && <p className="text-xs text-r-sub/50 italic">空空如也...</p>}
                       {list.items.map(item => (
-                        <div key={item.id} className="flex items-center gap-2 group">
-                          <button onClick={() => handleToggleItem(list.id, item.id)} className="shrink-0 text-r-sub hover:text-r-main">
-                             {item.completed ? <CheckCircle size={16} className="text-green-500" /> : <div className="w-4 h-4 rounded-full border-2 border-r-sub/50"></div>}
-                          </button>
-                          <span className={`text-sm flex-1 break-all ${item.completed ? 'line-through text-gray-400' : 'text-r-main'}`}>
-                            {item.text}
-                          </span>
-                          <button onClick={() => handleDeleteItem(list.id, item.id)} className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-opacity">
-                             <X size={14} />
-                          </button>
+                        <div key={item.id} className="flex items-center gap-2 group min-h-[28px]">
+                          {editingItem?.listId === list.id && editingItem?.itemId === item.id ? (
+                            <input 
+                              className="flex-1 bg-white border border-r-primary rounded px-2 py-1 text-sm outline-none text-r-main shadow-sm"
+                              value={editingText}
+                              onChange={e => setEditingText(e.target.value)}
+                              onBlur={handleSaveItemEdit}
+                              onKeyDown={e => e.key === 'Enter' && handleSaveItemEdit()}
+                              autoFocus
+                            />
+                          ) : (
+                            <>
+                              <button onClick={() => handleToggleItem(list.id, item.id)} className="shrink-0 text-r-sub hover:text-r-main">
+                                {item.completed ? <CheckCircle size={16} className="text-green-500" /> : <div className="w-4 h-4 rounded-full border-2 border-r-sub/50"></div>}
+                              </button>
+                              <span 
+                                onClick={() => handleStartEditItem(list.id, item.id, item.text)}
+                                className={`text-sm flex-1 break-all cursor-text ${item.completed ? 'line-through text-gray-400' : 'text-r-main'}`}
+                              >
+                                {item.text}
+                              </span>
+                              <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+                                <button onClick={() => handleStartEditItem(list.id, item.id, item.text)} className="text-gray-400 hover:text-r-primary">
+                                   <Edit2 size={14} />
+                                </button>
+                                <button onClick={() => handleDeleteItem(list.id, item.id)} className="text-gray-300 hover:text-red-500">
+                                   <X size={14} />
+                                </button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       ))}
                     </div>
