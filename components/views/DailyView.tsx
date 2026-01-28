@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { CheckCircle2, Droplets, Sun, Plus, ChevronLeft, ChevronRight, CalendarDays, CalendarRange, Calendar, Clock, Edit2, Trash2 } from 'lucide-react';
 import { Task, Priority, WaterLog, PlanType, SpecialEvent } from '../../types';
@@ -131,10 +132,15 @@ const DailyView: React.FC<DailyViewProps> = ({
   };
 
   const getEventIcon = (date: Date) => {
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const match = `${month}-${day}`;
-    const events = specialEvents.filter(e => e.date.endsWith(match));
+    const dateStr = toDateString(date);
+    const monthDay = dateStr.slice(5);
+    
+    // Strict match for holidays (YYYY-MM-DD), loose match (MM-DD) for others
+    const events = specialEvents.filter(e => {
+        if (e.type === 'holiday') return e.date === dateStr;
+        return e.date.slice(5) === monthDay;
+    });
+    
     if (events.length === 0) return null;
     const hasBirthday = events.find(e => e.type === 'birthday');
     if (hasBirthday) return '🎂';
@@ -336,10 +342,10 @@ const DailyView: React.FC<DailyViewProps> = ({
              const lunarStr = getLunarDate(date);
              const eventIcon = getEventIcon(date);
 
-             const monthStr = String(date.getMonth() + 1).padStart(2, '0');
-             const dayStr = String(date.getDate()).padStart(2, '0');
-             const matchStr = `${monthStr}-${dayStr}`;
-             const daysEvents = specialEvents.filter(e => e.date.endsWith(matchStr));
+             const daysEvents = specialEvents.filter(e => {
+                 if (e.type === 'holiday') return e.date === dateStr;
+                 return e.date.endsWith(dateStr.slice(5));
+             });
 
              return (
                <div 

@@ -131,6 +131,21 @@ const WalletView: React.FC<WalletViewProps> = ({
     onReorderChecklists(newList);
   };
 
+  const moveChecklistItem = (listId: string, itemIndex: number, direction: 'up' | 'down') => {
+    const list = checklists.find(c => c.id === listId);
+    if (!list) return;
+
+    if (direction === 'up' && itemIndex === 0) return;
+    if (direction === 'down' && itemIndex === list.items.length - 1) return;
+
+    const newItems = [...list.items];
+    const targetIndex = direction === 'up' ? itemIndex - 1 : itemIndex + 1;
+
+    [newItems[itemIndex], newItems[targetIndex]] = [newItems[targetIndex], newItems[itemIndex]];
+
+    onUpdateChecklist(listId, { items: newItems });
+  };
+
   return (
     <div className="space-y-6 pb-20">
       <div className="flex gap-2">
@@ -190,7 +205,7 @@ const WalletView: React.FC<WalletViewProps> = ({
                   <p className="text-sm">暂无清单，添加一个购物列表吧！</p>
                 </div>
               )}
-              {checklists.map((list, index) => (
+              {checklists.map((list, listIndex) => (
                 <div key={list.id} className="bear-card p-4 bg-[#FFF9C4] relative shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-2 border-b border-black/5 pb-2">
                        <div className="flex items-center gap-2 flex-1">
@@ -202,16 +217,16 @@ const WalletView: React.FC<WalletViewProps> = ({
                        <div className="flex gap-1 items-center">
                          <div className="flex flex-col mr-1">
                            <button 
-                              onClick={() => moveChecklist(index, 'up')} 
-                              disabled={index === 0}
-                              className={`text-r-sub hover:text-r-main disabled:opacity-20 ${index === 0 ? 'cursor-not-allowed' : ''}`}
+                              onClick={() => moveChecklist(listIndex, 'up')} 
+                              disabled={listIndex === 0}
+                              className={`text-r-sub hover:text-r-main disabled:opacity-20 ${listIndex === 0 ? 'cursor-not-allowed' : ''}`}
                            >
                              <ArrowUp size={14} />
                            </button>
                            <button 
-                              onClick={() => moveChecklist(index, 'down')} 
-                              disabled={index === checklists.length - 1}
-                              className={`text-r-sub hover:text-r-main disabled:opacity-20 ${index === checklists.length - 1 ? 'cursor-not-allowed' : ''}`}
+                              onClick={() => moveChecklist(listIndex, 'down')} 
+                              disabled={listIndex === checklists.length - 1}
+                              className={`text-r-sub hover:text-r-main disabled:opacity-20 ${listIndex === checklists.length - 1 ? 'cursor-not-allowed' : ''}`}
                            >
                              <ArrowDown size={14} />
                            </button>
@@ -222,7 +237,7 @@ const WalletView: React.FC<WalletViewProps> = ({
                     
                     <div className="space-y-1.5 mb-3 min-h-[50px]">
                       {list.items.length === 0 && <p className="text-xs text-r-sub/50 italic">空空如也...</p>}
-                      {list.items.map(item => (
+                      {list.items.map((item, itemIndex) => (
                         <div key={item.id} className="flex items-center gap-2 group min-h-[28px]">
                           {editingItem?.listId === list.id && editingItem?.itemId === item.id ? (
                             <input 
@@ -245,6 +260,20 @@ const WalletView: React.FC<WalletViewProps> = ({
                                 {item.text}
                               </span>
                               <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+                                <div className="flex flex-col -space-y-0.5 mr-1">
+                                    <button 
+                                        onClick={() => moveChecklistItem(list.id, itemIndex, 'up')}
+                                        className={`text-r-sub/50 hover:text-r-primary p-0.5 ${itemIndex === 0 ? 'invisible' : ''}`}
+                                    >
+                                        <ArrowUp size={10} />
+                                    </button>
+                                    <button 
+                                        onClick={() => moveChecklistItem(list.id, itemIndex, 'down')}
+                                        className={`text-r-sub/50 hover:text-r-primary p-0.5 ${itemIndex === list.items.length - 1 ? 'invisible' : ''}`}
+                                    >
+                                        <ArrowDown size={10} />
+                                    </button>
+                                </div>
                                 <button onClick={() => handleStartEditItem(list.id, item.id, item.text)} className="text-gray-400 hover:text-r-primary">
                                    <Edit2 size={14} />
                                 </button>

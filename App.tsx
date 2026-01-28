@@ -79,8 +79,18 @@ const App: React.FC = () => {
       // 2. Event Reminders (Check at 09:00 AM)
       if (currentMinute === '09:00') {
          data.specialEvents.forEach(event => {
-            const eventMonthDay = event.date.slice(5); 
-            if (eventMonthDay === currentMonthDay) {
+            let shouldNotify = false;
+            
+            // Holidays match exact date (YYYY-MM-DD) to avoid repeating in wrong years
+            if (event.type === 'holiday') {
+                if (event.date === currentDate) shouldNotify = true;
+            } else {
+                // Birthdays/Anniversaries recur annually (match MM-DD)
+                const eventMonthDay = event.date.slice(5); 
+                if (eventMonthDay === currentMonthDay) shouldNotify = true;
+            }
+
+            if (shouldNotify) {
                let bodyText = "今天是特殊的日子哦！";
                if (event.type === 'birthday') bodyText = "祝生日快乐！记得吃蛋糕！🎂";
                if (event.type === 'holiday') bodyText = "节日快乐！好好庆祝一下吧！🎉";
