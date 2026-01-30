@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { Scale, Activity, Moon, Wind, Footprints, Sparkles, ChevronRight, Loader2, HeartPulse } from 'lucide-react';
 import { WeightEntry, StepLog, BloodPressureLog, BloodOxygenLog, SleepLog, HeartRateLog } from '../../types';
+import VoiceInputButton from '../ui/VoiceInputButton';
 
 interface HealthViewProps {
   weightHistory: WeightEntry[];
@@ -147,24 +149,34 @@ const HealthView: React.FC<HealthViewProps> = ({
           </h3>
 
           <form onSubmit={handleSubmit} className="flex gap-2 items-end mb-6">
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <label className="text-xs text-r-sub font-bold ml-1 mb-1 block">{inputConfig.label}</label>
-              <input 
-                type={inputConfig.type} step={inputConfig.step} value={inputValue1} onChange={e => setInputValue1(e.target.value)}
-                placeholder={inputConfig.placeholder}
-                className="w-full p-2.5 rounded-xl border border-r-border bg-[#FAFAFA] focus:border-r-primary outline-none"
-                autoFocus
-              />
+              <div className="relative">
+                <input 
+                    type={inputConfig.type} step={inputConfig.step} value={inputValue1} onChange={e => setInputValue1(e.target.value)}
+                    placeholder={inputConfig.placeholder}
+                    className="w-full p-2.5 rounded-xl border border-r-border bg-[#FAFAFA] focus:border-r-primary outline-none pr-10"
+                    autoFocus
+                />
+                <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                   <VoiceInputButton onTranscript={(val) => setInputValue1(val.replace(/[^0-9.]/g, ''))} simple />
+                </div>
+              </div>
             </div>
             
             {activeMetric === 'bp' && (
               <div className="flex-1">
                 <label className="text-xs text-r-sub font-bold ml-1 mb-1 block">{inputConfig.label2}</label>
-                <input 
-                  type="number" value={inputValue2} onChange={e => setInputValue2(e.target.value)}
-                  placeholder={inputConfig.placeholder2}
-                  className="w-full p-2.5 rounded-xl border border-r-border bg-[#FAFAFA] focus:border-r-primary outline-none"
-                />
+                <div className="relative">
+                    <input 
+                    type="number" value={inputValue2} onChange={e => setInputValue2(e.target.value)}
+                    placeholder={inputConfig.placeholder2}
+                    className="w-full p-2.5 rounded-xl border border-r-border bg-[#FAFAFA] focus:border-r-primary outline-none pr-10"
+                    />
+                     <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                        <VoiceInputButton onTranscript={(val) => setInputValue2(val.replace(/[^0-9.]/g, ''))} simple />
+                    </div>
+                </div>
               </div>
             )}
 

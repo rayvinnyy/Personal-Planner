@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { Receipt, Ticket, Plus, Trash2, CheckCircle, Edit2, ListChecks, Check, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { Bill, Coupon, Checklist, ChecklistItem } from '../../types';
+import VoiceInputButton from '../ui/VoiceInputButton';
 
 interface WalletViewProps {
   bills: Bill[];
@@ -64,7 +64,7 @@ const WalletView: React.FC<WalletViewProps> = ({
       if (editId) {
         onUpdateChecklist(editId, { title });
       } else {
-        onAddChecklist({ title, items: [] });
+        onAddChecklist({ title });
       }
     }
     resetForm();
@@ -162,164 +162,179 @@ const WalletView: React.FC<WalletViewProps> = ({
                  <Receipt size={20} />
                </div>
                <div>
-                 <h4 className={`font-bold ${bill.paid ? 'line-through text-gray-400' : 'text-r-main'}`}>{bill.title}</h4>
-                 <p className="text-xs text-r-sub">截止: {new Date(bill.dueDate).toLocaleDateString()}</p>
+                 <h4 className={`font-bold ${bill.paid ? 'line-through text-slate-500' : 'text-r-main'}`}>{bill.title}</h4>
+                 <div className="flex items-center gap-2 text-xs text-r-sub">
+                   <span>RM {bill.amount.toFixed(2)}</span>
+                   <span>•</span>
+                   <span>{bill.dueDate}</span>
+                 </div>
                </div>
              </div>
-             <div className="text-right">
-                <div className="font-bold text-r-main">${bill.amount.toFixed(2)}</div>
-                <div className="flex gap-2 justify-end mt-1">
-                  {!bill.paid && <button onClick={() => onPayBill(bill.id)} className="text-xs bg-green-500 text-white px-2 py-1 rounded">支付</button>}
-                  <button onClick={() => openEditBill(bill)} className="text-gray-400 hover:text-r-main p-1 ml-1"><Edit2 size={16}/></button>
-                  <button onClick={() => onDeleteBill(bill.id)} className="text-gray-400 hover:text-red-500 p-1"><Trash2 size={16}/></button>
-                </div>
+             <div className="flex gap-2">
+                <button onClick={() => onPayBill(bill.id)} className={`p-1.5 rounded-lg ${bill.paid ? 'text-gray-400' : 'text-green-500 hover:bg-green-50'}`}>
+                  <CheckCircle size={18} />
+                </button>
+                <button onClick={() => openEditBill(bill)} className="p-1.5 rounded-lg text-gray-400 hover:text-r-main hover:bg-r-light">
+                  <Edit2 size={18} />
+                </button>
+                <button onClick={() => onDeleteBill(bill.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50">
+                  <Trash2 size={18} />
+                </button>
              </div>
           </div>
         ))}
 
         {activeTab === 'coupons' && coupons.map(coupon => (
-          <div key={coupon.id} className={`bear-card p-4 flex items-center justify-between border-dashed border-2 ${coupon.used ? 'opacity-60 bg-gray-50' : 'bg-[#FFFDE7]'}`}>
-             <div className="flex items-center gap-3">
-               <div className="p-2 rounded-full bg-r-primary text-white">
-                 <Ticket size={20} />
-               </div>
-               <div>
-                 <h4 className={`font-bold ${coupon.used ? 'line-through text-gray-400' : 'text-r-main'}`}>{coupon.title}</h4>
-                 <p className="text-xs text-r-sub">有效期: {new Date(coupon.expiryDate).toLocaleDateString()}</p>
-                 {coupon.code && <p className="text-xs font-mono bg-white inline-block px-1 rounded mt-1">{coupon.code}</p>}
-               </div>
-             </div>
-             <div className="flex gap-2 items-center">
-                {!coupon.used && <button onClick={() => onUseCoupon(coupon.id)} className="text-r-main hover:bg-r-border p-1 rounded"><CheckCircle size={20}/></button>}
-                <button onClick={() => openEditCoupon(coupon)} className="text-gray-400 hover:text-r-main p-1"><Edit2 size={18}/></button>
-                <button onClick={() => onDeleteCoupon(coupon.id)} className="text-gray-400 hover:text-red-500 p-1 rounded"><Trash2 size={20}/></button>
+          <div key={coupon.id} className={`bear-card p-4 relative overflow-hidden ${coupon.used ? 'opacity-60 bg-gray-50' : 'bg-r-card'}`}>
+             <div className="absolute left-0 top-0 bottom-0 w-2 bg-r-primary"></div>
+             <div className="flex justify-between items-center pl-3">
+                <div className="flex items-center gap-3">
+                   <div className="bg-r-light p-2 rounded-full text-r-primary">
+                     <Ticket size={20} />
+                   </div>
+                   <div>
+                     <h4 className={`font-bold ${coupon.used ? 'line-through text-slate-500' : 'text-r-main'}`}>{coupon.title}</h4>
+                     <div className="flex items-center gap-2 text-xs text-r-sub">
+                       {coupon.code && <span className="font-mono bg-white px-1 rounded border">{coupon.code}</span>}
+                       <span>有效期: {coupon.expiryDate}</span>
+                     </div>
+                   </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => onUseCoupon(coupon.id)} className={`p-1.5 rounded-lg ${coupon.used ? 'text-gray-400' : 'text-green-500 hover:bg-green-50'}`}>
+                    <CheckCircle size={18} />
+                  </button>
+                  <button onClick={() => openEditCoupon(coupon)} className="p-1.5 rounded-lg text-gray-400 hover:text-r-main hover:bg-r-light">
+                    <Edit2 size={18} />
+                  </button>
+                  <button onClick={() => onDeleteCoupon(coupon.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50">
+                    <Trash2 size={18} />
+                  </button>
+                </div>
              </div>
           </div>
         ))}
 
-        {activeTab === 'checklists' && (
-           <div className="grid grid-cols-1 gap-4">
-              {checklists.length === 0 && (
-                <div className="text-center py-10 opacity-50 bg-r-card/50 rounded-2xl border-2 border-dashed border-r-border">
-                  <ListChecks size={40} className="mx-auto mb-2 text-r-muted" />
-                  <p className="text-sm">暂无清单，添加一个购物列表吧！</p>
-                </div>
-              )}
-              {checklists.map((list, listIndex) => (
-                <div key={list.id} className="bear-card p-4 bg-[#FFF9C4] relative shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-2 border-b border-black/5 pb-2">
-                       <div className="flex items-center gap-2 flex-1">
-                          <h3 className="font-bold text-r-main text-lg">{list.title}</h3>
-                          <button onClick={() => openEditChecklist(list)} className="text-r-sub/50 hover:text-r-main p-1 transition-colors">
-                             <Edit2 size={14} />
-                          </button>
-                       </div>
-                       <div className="flex gap-1 items-center">
-                         <div className="flex flex-col mr-1">
-                           <button 
-                              onClick={() => moveChecklist(listIndex, 'up')} 
-                              disabled={listIndex === 0}
-                              className={`text-r-sub hover:text-r-main disabled:opacity-20 ${listIndex === 0 ? 'cursor-not-allowed' : ''}`}
-                           >
-                             <ArrowUp size={14} />
-                           </button>
-                           <button 
-                              onClick={() => moveChecklist(listIndex, 'down')} 
-                              disabled={listIndex === checklists.length - 1}
-                              className={`text-r-sub hover:text-r-main disabled:opacity-20 ${listIndex === checklists.length - 1 ? 'cursor-not-allowed' : ''}`}
-                           >
-                             <ArrowDown size={14} />
-                           </button>
-                         </div>
-                         <button onClick={() => onDeleteChecklist(list.id)} className="text-gray-400 hover:text-red-500 ml-1"><Trash2 size={16}/></button>
-                       </div>
-                    </div>
-                    
-                    <div className="space-y-1.5 mb-3 min-h-[50px]">
-                      {list.items.length === 0 && <p className="text-xs text-r-sub/50 italic">空空如也...</p>}
-                      {list.items.map((item, itemIndex) => (
-                        <div key={item.id} className="flex items-center gap-2 group min-h-[28px]">
-                          {editingItem?.listId === list.id && editingItem?.itemId === item.id ? (
-                            <input 
-                              className="flex-1 bg-white border border-r-primary rounded px-2 py-1 text-sm outline-none text-r-main shadow-sm"
-                              value={editingText}
-                              onChange={e => setEditingText(e.target.value)}
-                              onBlur={handleSaveItemEdit}
-                              onKeyDown={e => e.key === 'Enter' && handleSaveItemEdit()}
-                              autoFocus
-                            />
-                          ) : (
-                            <>
-                              <button onClick={() => handleToggleItem(list.id, item.id)} className="shrink-0 text-r-sub hover:text-r-main">
-                                {item.completed ? <CheckCircle size={16} className="text-green-500" /> : <div className="w-4 h-4 rounded-full border-2 border-r-sub/50"></div>}
-                              </button>
-                              <span 
-                                onClick={() => handleStartEditItem(list.id, item.id, item.text)}
-                                className={`text-sm flex-1 break-all cursor-text ${item.completed ? 'line-through text-gray-400' : 'text-r-main'}`}
-                              >
-                                {item.text}
-                              </span>
-                              <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
-                                <div className="flex flex-col -space-y-0.5 mr-1">
-                                    <button 
-                                        onClick={() => moveChecklistItem(list.id, itemIndex, 'up')}
-                                        className={`text-r-sub/50 hover:text-r-primary p-0.5 ${itemIndex === 0 ? 'invisible' : ''}`}
-                                    >
-                                        <ArrowUp size={10} />
-                                    </button>
-                                    <button 
-                                        onClick={() => moveChecklistItem(list.id, itemIndex, 'down')}
-                                        className={`text-r-sub/50 hover:text-r-primary p-0.5 ${itemIndex === list.items.length - 1 ? 'invisible' : ''}`}
-                                    >
-                                        <ArrowDown size={10} />
-                                    </button>
-                                </div>
-                                <button onClick={() => handleStartEditItem(list.id, item.id, item.text)} className="text-gray-400 hover:text-r-primary">
-                                   <Edit2 size={14} />
-                                </button>
-                                <button onClick={() => handleDeleteItem(list.id, item.id)} className="text-gray-300 hover:text-red-500">
-                                   <X size={14} />
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+        {activeTab === 'checklists' && checklists.map((checklist, index) => (
+          <div key={checklist.id} className="bear-card bg-r-card p-4">
+             <div className="flex justify-between items-center mb-3">
+               <div className="flex items-center gap-2">
+                 <div className="flex flex-col gap-0.5">
+                   <button onClick={() => moveChecklist(index, 'up')} disabled={index === 0} className="text-gray-300 hover:text-r-main disabled:opacity-0"><ArrowUp size={12} /></button>
+                   <button onClick={() => moveChecklist(index, 'down')} disabled={index === checklists.length - 1} className="text-gray-300 hover:text-r-main disabled:opacity-0"><ArrowDown size={12} /></button>
+                 </div>
+                 <h4 className="font-bold text-r-main flex items-center gap-2">
+                   <ListChecks size={18} className="text-r-primary"/>
+                   {checklist.title}
+                 </h4>
+               </div>
+               <div className="flex gap-1">
+                 <button onClick={() => openEditChecklist(checklist)} className="p-1.5 text-gray-400 hover:text-r-main"><Edit2 size={16} /></button>
+                 <button onClick={() => onDeleteChecklist(checklist.id)} className="p-1.5 text-gray-400 hover:text-red-500"><Trash2 size={16} /></button>
+               </div>
+             </div>
 
-                    <div className="flex items-center gap-2 mt-2">
-                       <input 
-                         className="flex-1 bg-white/50 border border-transparent focus:border-r-border rounded px-2 py-1 text-sm outline-none placeholder:text-gray-400"
-                         placeholder="添加项目..."
-                         value={newItemTexts[list.id] || ''}
-                         onChange={(e) => setNewItemTexts(prev => ({ ...prev, [list.id]: e.target.value }))}
-                         onKeyDown={(e) => { if(e.key === 'Enter') handleAddItem(list.id); }}
-                       />
-                       <button onClick={() => handleAddItem(list.id)} className="bg-r-main text-white rounded p-1 hover:opacity-80">
-                         <Plus size={16} />
-                       </button>
-                    </div>
-                </div>
-              ))}
-           </div>
-        )}
+             <div className="space-y-2 mb-3">
+               {checklist.items.map((item, idx) => (
+                 <div key={item.id} className="group flex items-center gap-2 text-sm bg-white/50 p-2 rounded-lg hover:bg-white transition-colors">
+                   <button 
+                     onClick={() => handleToggleItem(checklist.id, item.id)}
+                     className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${item.completed ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-r-primary'}`}
+                   >
+                     {item.completed && <Check size={12} />}
+                   </button>
+                   
+                   {editingItem?.itemId === item.id ? (
+                      <div className="flex-1 flex gap-1">
+                        <input 
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          className="flex-1 bg-white border border-r-primary rounded px-1 outline-none text-r-main"
+                          autoFocus
+                          onKeyDown={(e) => { if(e.key === 'Enter') handleSaveItemEdit(); }}
+                        />
+                        <button onClick={handleSaveItemEdit} className="text-green-500"><Check size={16} /></button>
+                      </div>
+                   ) : (
+                      <span className={`flex-1 ${item.completed ? 'line-through text-slate-400' : 'text-r-main'}`} onClick={() => handleStartEditItem(checklist.id, item.id, item.text)}>
+                        {item.text}
+                      </span>
+                   )}
+                   
+                   <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+                      <div className="flex flex-col gap-0.5 mr-1">
+                        <button onClick={() => moveChecklistItem(checklist.id, idx, 'up')} disabled={idx === 0} className="text-gray-300 hover:text-r-main disabled:opacity-0"><ArrowUp size={10} /></button>
+                        <button onClick={() => moveChecklistItem(checklist.id, idx, 'down')} disabled={idx === checklist.items.length - 1} className="text-gray-300 hover:text-r-main disabled:opacity-0"><ArrowDown size={10} /></button>
+                      </div>
+                      <button onClick={() => handleDeleteItem(checklist.id, item.id)} className="text-gray-400 hover:text-red-500">
+                        <Trash2 size={14} />
+                      </button>
+                   </div>
+                 </div>
+               ))}
+             </div>
+
+             <div className="flex gap-2">
+               <div className="relative flex-1">
+                 <input 
+                   placeholder="添加新项目..."
+                   value={newItemTexts[checklist.id] || ''}
+                   onChange={(e) => setNewItemTexts(prev => ({ ...prev, [checklist.id]: e.target.value }))}
+                   onKeyDown={(e) => { if (e.key === 'Enter') handleAddItem(checklist.id); }}
+                   className="w-full p-2 text-sm rounded-lg border border-r-border outline-none focus:border-r-primary pr-8"
+                 />
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                      <VoiceInputButton onTranscript={(txt) => setNewItemTexts(prev => ({ ...prev, [checklist.id]: txt }))} simple />
+                  </div>
+               </div>
+               <button onClick={() => handleAddItem(checklist.id)} className="bg-r-primary text-white p-2 rounded-lg hover:opacity-90">
+                 <Plus size={16} />
+               </button>
+             </div>
+          </div>
+        ))}
+        
+        {/* Empty States */}
+        {activeTab === 'bills' && bills.length === 0 && <p className="text-center text-r-muted text-sm py-4">暂无账单</p>}
+        {activeTab === 'coupons' && coupons.length === 0 && <p className="text-center text-r-muted text-sm py-4">暂无优惠券</p>}
+        {activeTab === 'checklists' && checklists.length === 0 && <p className="text-center text-r-muted text-sm py-4">暂无清单</p>}
+
       </div>
 
       {showForm ? (
-        <div className="bear-card p-4 animate-in slide-in-from-bottom-5 bg-r-card">
-           <h3 className="font-bold text-r-main mb-3">{editId ? '编辑' : '添加'} {activeTab === 'bills' ? '账单' : activeTab === 'coupons' ? '优惠券' : '清单'}</h3>
-           <input className="w-full mb-2 p-2 rounded-xl border border-r-border bg-white outline-none focus:border-r-primary text-r-main" placeholder="名称 / 标题" value={title} onChange={e => setTitle(e.target.value)} />
+        <div className="bear-card p-4 animate-in slide-in-from-bottom-5 bg-r-card/95 backdrop-blur-sm border-2 border-r-border shadow-xl">
+           <div className="flex justify-between items-center mb-4">
+             <h3 className="font-bold text-r-main">
+               {editId ? '编辑' : '添加'} {activeTab === 'bills' ? '账单' : activeTab === 'coupons' ? '优惠券' : '清单'}
+             </h3>
+             <button onClick={resetForm}><X size={20} className="text-r-sub hover:text-r-main"/></button>
+           </div>
            
-           {activeTab !== 'checklists' && (
-             <div className="flex gap-2 mb-2">
-               <input className="flex-1 p-2 rounded-xl border border-r-border bg-white outline-none focus:border-r-primary text-r-main" placeholder={activeTab === 'bills' ? "金额 ($)" : "核销码 (选填)"} value={amountOrCode} onChange={e => setAmountOrCode(e.target.value)} />
-               <input type="date" className="flex-1 p-2 rounded-xl border border-r-border bg-white outline-none focus:border-r-primary text-r-main" value={date} onChange={e => setDate(e.target.value)} />
+           <div className="space-y-3">
+             <div>
+               <label className="block text-xs font-bold text-r-sub mb-1">名称</label>
+               <div className="flex gap-2">
+                 <input className="flex-1 p-2 rounded-xl border border-r-border outline-none focus:border-r-primary" value={title} onChange={e => setTitle(e.target.value)} placeholder="例如: 电费, 超市购物..." />
+                 <VoiceInputButton onTranscript={setTitle} />
+               </div>
              </div>
-           )}
-           
-           <div className="flex gap-2 justify-end">
-             <button onClick={resetForm} className="text-r-sub text-sm px-3">取消</button>
-             <button onClick={handleSave} className="bg-r-primary text-r-main px-4 py-2 rounded-lg font-bold shadow-sm hover:opacity-80">保存</button>
+             
+             {activeTab !== 'checklists' && (
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-r-sub mb-1">{activeTab === 'bills' ? '金额' : '优惠码 (可选)'}</label>
+                    <input className="w-full p-2 rounded-xl border border-r-border outline-none focus:border-r-primary" value={amountOrCode} onChange={e => setAmountOrCode(e.target.value)} placeholder={activeTab === 'bills' ? '0.00' : 'CODE123'} />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-r-sub mb-1">{activeTab === 'bills' ? '截止日期' : '有效期'}</label>
+                    <input type="date" className="w-full p-2 rounded-xl border border-r-border outline-none focus:border-r-primary" value={date} onChange={e => setDate(e.target.value)} />
+                  </div>
+                </div>
+             )}
+             
+             <div className="flex justify-end pt-2">
+               <button onClick={handleSave} className="bg-r-main text-white px-6 py-2 rounded-xl font-bold shadow-md hover:opacity-90 transition-all">保存</button>
+             </div>
            </div>
         </div>
       ) : (
@@ -327,7 +342,7 @@ const WalletView: React.FC<WalletViewProps> = ({
           <div className="bg-r-primary text-r-main p-1 rounded-full group-hover:bg-white group-hover:text-r-primary transition-colors">
             <Plus size={16} strokeWidth={3} />
           </div>
-          添加
+          添加新{activeTab === 'bills' ? '账单' : activeTab === 'coupons' ? '优惠券' : '清单'}
         </button>
       )}
     </div>

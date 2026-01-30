@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Task, Priority, AppData, PlanType, ThemeType, Checklist } from './types';
 import { saveData, loadData, DEFAULT_DATA, saveStoredApiKey } from './services/storageService';
+import { saveCustomMusicToDB, getCustomMusicFromDB, clearCustomMusicFromDB } from './services/musicService';
 import { analyzeHealthData } from './services/geminiService';
 import Modal from './components/ui/Modal';
 import PlanGenerator from './components/PlanGenerator';
@@ -11,6 +12,8 @@ import HealthView from './components/views/HealthView';
 import WalletView from './components/views/WalletView';
 import LifestyleView from './components/views/LifestyleView';
 import SettingsView from './components/views/SettingsView';
+import { Music, Pause, Disc } from 'lucide-react';
+import VoiceInputButton from './components/ui/VoiceInputButton';
 
 const App: React.FC = () => {
   const [data, setData] = useState<AppData>(loadData());
@@ -27,6 +30,23 @@ const App: React.FC = () => {
   const [newTaskPlanType, setNewTaskPlanType] = useState<PlanType>('daily');
   const [newTaskDate, setNewTaskDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
+  // Music State
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [customMusic, setCustomMusic] = useState<string | null>(null);
+  const [isMusicLoading, setIsMusicLoading] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  
+  // Load custom music from IndexedDB on mount
+  useEffect(() => {
+    const fetchMusic = async () => {
+      const storedMusic = await getCustomMusicFromDB();
+      if (storedMusic) {
+        setCustomMusic(storedMusic);
+      }
+    };
+    fetchMusic();
+  }, []);
+
   // Apply Theme to Body
   useEffect(() => {
     const themeClass = `theme-${data.theme || 'original'}`;
@@ -35,6 +55,13 @@ const App: React.FC = () => {
     // Add default tailwind classes that rely on vars
     document.body.classList.add('bg-r-base', 'text-r-main');
   }, [data.theme]);
+
+  // Set initial volume
+  useEffect(() => {
+    if (audioRef.current) {
+        audioRef.current.volume = 0.5;
+    }
+  }, []);
 
   // Persistence
   useEffect(() => {
@@ -132,6 +159,59 @@ const App: React.FC = () => {
   };
   const resetBackground = () => updateData({ backgroundImage: undefined });
 
+  const handleMusicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 15MB limit check for IndexedDB (Much larger than LocalStorage)
+      if (file.size > 15 * 1024 * 1024) {
+         alert("文件过大！请上传小于 15MB 的音乐文件。");
+         return;
+      }
+      
+      setIsMusicLoading(true);
+      const reader = new FileReader();
+      
+      reader.onloadend = async () => {
+        try {
+          const result = reader.result as string;
+          // Save to IndexedDB
+          await saveCustomMusicToDB(result);
+          setCustomMusic(result);
+          
+          // If playing, reload and play new track immediately
+          if (isMusicPlaying && audioRef.current) {
+             audioRef.current.src = result;
+             audioRef.current.play().catch(console.error);
+          }
+          alert("背景音乐上传成功！(已保存到 IndexedDB)");
+        } catch (error) {
+          console.error("IndexedDB Error", error);
+          alert("保存音乐失败，请重试。");
+        } finally {
+          setIsMusicLoading(false);
+        }
+      };
+      
+      reader.onerror = () => {
+        setIsMusicLoading(false);
+        alert("读取文件失败");
+      };
+
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleResetMusic = async () => {
+    await clearCustomMusicFromDB();
+    setCustomMusic(null);
+    setIsMusicPlaying(false);
+    if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+    }
+    alert("背景音乐已删除。");
+  };
+
   // Data Import / Export
   const handleExportData = () => {
     const jsonString = JSON.stringify(data, null, 2);
@@ -178,6 +258,8 @@ const App: React.FC = () => {
       if (window.confirm("再次确认：真的要删除所有任务、健康记录和设置吗？")) {
         setData(DEFAULT_DATA);
         localStorage.removeItem('rilakkuma_life_v1');
+        clearCustomMusicFromDB();
+        setCustomMusic(null);
         alert("数据已重置为初始状态。");
       }
     }
@@ -367,9 +449,76 @@ const App: React.FC = () => {
     ? { backgroundImage: `url(${data.backgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : { backgroundImage: `url("data:image/svg+xml,${bgSvg}")`, backgroundRepeat: 'repeat', backgroundSize: '160px 160px' };
 
+  // Music Player Functions
+  const toggleMusic = () => {
+    if (!customMusic) {
+      return;
+    }
+    if (audioRef.current) {
+      if (isMusicPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play().catch(err => {
+            console.error("Autoplay prevented");
+        });
+      }
+      setIsMusicPlaying(!isMusicPlaying);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full relative max-w-lg mx-auto w-full shadow-2xl transition-all duration-500 bg-r-base" style={bgStyle}>
       {data.backgroundImage && <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-0"></div>}
+
+      {/* Background Music Player - Always present to maintain playback */}
+      <audio 
+        ref={audioRef} 
+        loop 
+        preload="auto"
+        src={customMusic || ""} 
+        onError={() => console.error("Audio Load Error: Failed to load source")}
+      />
+
+      {/* Floating Music Button - Only visible if music is set */}
+      {activeTab === 'daily' && customMusic && (
+        <button 
+          onClick={toggleMusic}
+          className={`absolute top-4 right-4 z-50 p-2.5 rounded-full backdrop-blur-sm border-2 transition-all duration-500 shadow-md ${
+              isMusicPlaying 
+              ? 'bg-r-main text-white border-r-main rotate-180' 
+              : 'bg-white/80 text-r-main border-r-border hover:bg-white'
+          }`}
+          title={isMusicPlaying ? "暂停音乐" : "播放音乐"}
+        >
+          {isMusicPlaying ? (
+              <div className="relative">
+                  <Pause size={20} />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-ping"></span>
+              </div>
+          ) : (
+              <div className="relative">
+                  <Music size={20} />
+              </div>
+          )}
+        </button>
+      )}
+
+      {/* Now Playing Toast - Only visible on 'daily' tab */}
+      {activeTab === 'daily' && isMusicPlaying && customMusic && (
+          <div className="absolute top-16 right-4 z-40 bg-black/70 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-2 animate-in fade-in slide-in-from-top-2 pointer-events-none">
+              <Disc size={12} className="animate-spin" />
+              <span>正在播放: 自定义音乐</span>
+          </div>
+      )}
+      
+      {isMusicLoading && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+           <div className="bg-white p-4 rounded-xl flex items-center gap-3">
+             <div className="animate-spin w-5 h-5 border-2 border-r-primary border-t-transparent rounded-full"></div>
+             <span className="text-sm font-bold text-r-main">正在处理音乐文件...</span>
+           </div>
+        </div>
+      )}
 
       <main className="flex-1 overflow-y-auto px-4 py-6 scrollbar-hide z-10 relative">
         {activeTab === 'daily' && (
@@ -449,6 +598,9 @@ const App: React.FC = () => {
             hasBackgroundImage={!!data.backgroundImage}
             onBackgroundUpload={handleBackgroundUpload}
             onResetBackground={resetBackground}
+            hasCustomMusic={!!customMusic}
+            onMusicUpload={handleMusicUpload}
+            onResetMusic={handleResetMusic}
             onExportData={handleExportData}
             onImportData={handleImportData}
             onResetData={handleResetData}
@@ -473,13 +625,16 @@ const App: React.FC = () => {
             <label className="block text-sm font-bold text-r-main mb-1">
                {newTaskPlanType === 'daily' ? '任务名称' : '目标内容'}
             </label>
-            <input 
-              type="text" 
-              value={newTaskTitle}
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-              className="w-full p-3 rounded-xl border border-r-border focus:border-r-primary outline-none bg-r-card text-r-main"
-              autoFocus
-            />
+            <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  className="flex-1 p-3 rounded-xl border border-r-border focus:border-r-primary outline-none bg-r-card text-r-main"
+                  autoFocus
+                />
+                <VoiceInputButton onTranscript={setNewTaskTitle} />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {newTaskPlanType === 'daily' && (

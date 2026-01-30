@@ -1,8 +1,10 @@
+
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Utensils, Plane, Plus, Trash2, Edit2, Image as ImageIcon, X, MapPin, FileSpreadsheet, Download, CalendarHeart, Gift, Cake, PartyPopper, StickyNote, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { Restaurant, Trip, SpecialEvent, EventType, Note } from '../../types';
 // @ts-ignore
 import * as XLSX from 'xlsx';
+import VoiceInputButton from '../ui/VoiceInputButton';
 
 interface LifestyleViewProps {
   restaurants: Restaurant[];
@@ -325,22 +327,29 @@ const LifestyleView: React.FC<LifestyleViewProps> = ({
              </div>
            )}
 
-           <div className="mb-2">
+           <div className="mb-2 flex items-center gap-2">
               <input 
-                className="w-full p-2 rounded-xl border border-r-border bg-white outline-none focus:border-r-primary text-r-main font-bold" 
+                className="flex-1 p-2 rounded-xl border border-r-border bg-white outline-none focus:border-r-primary text-r-main font-bold" 
                 placeholder={activeTab === 'food' ? "餐厅名称" : activeTab === 'travel' ? "目的地" : activeTab === 'events' ? "节日/生日名称" : "标题 (如: 今天的心情)"} 
                 value={name} onChange={e => setName(e.target.value)} 
               />
+              <VoiceInputButton onTranscript={setName} simple />
            </div>
 
            {activeTab === 'food' && (
              <div className="flex gap-2 mb-2">
                 <div className="flex-1 relative">
-                  <input list="cuisine-options" className="w-full p-2 rounded-xl border border-r-border bg-white outline-none focus:border-r-primary text-r-main" placeholder="菜系" value={typeOrDest} onChange={e => setTypeOrDest(e.target.value)} />
+                  <input list="cuisine-options" className="w-full p-2 rounded-xl border border-r-border bg-white outline-none focus:border-r-primary text-r-main pr-8" placeholder="菜系" value={typeOrDest} onChange={e => setTypeOrDest(e.target.value)} />
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                      <VoiceInputButton onTranscript={setTypeOrDest} simple />
+                  </div>
                   <datalist id="cuisine-options">{availableCuisines.map(type => <option key={type} value={type} />)}</datalist>
                 </div>
                 <div className="flex-1 relative">
-                  <input list="area-options" className="w-full p-2 rounded-xl border border-r-border bg-white outline-none focus:border-r-primary text-r-main" placeholder="区域" value={area} onChange={e => setArea(e.target.value)} />
+                  <input list="area-options" className="w-full p-2 rounded-xl border border-r-border bg-white outline-none focus:border-r-primary text-r-main pr-8" placeholder="区域" value={area} onChange={e => setArea(e.target.value)} />
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                      <VoiceInputButton onTranscript={setArea} simple />
+                  </div>
                   <datalist id="area-options">{availableAreas.map(a => <option key={a} value={a} />)}</datalist>
                 </div>
              </div>
@@ -359,7 +368,12 @@ const LifestyleView: React.FC<LifestyleViewProps> = ({
                    </div>
                    <input ref={excelInputRef} type="file" accept=".xlsx, .xls, .csv" className="hidden" onChange={handleExcelUpload} />
                 </div>
-                <textarea className="w-full mb-2 p-2 rounded-xl border border-r-border text-sm bg-white outline-none" placeholder="备注..." value={typeOrDest} onChange={e => setTypeOrDest(e.target.value)} />
+                <div className="relative">
+                    <textarea className="w-full mb-2 p-2 rounded-xl border border-r-border text-sm bg-white outline-none pr-8" placeholder="备注..." value={typeOrDest} onChange={e => setTypeOrDest(e.target.value)} />
+                    <div className="absolute right-2 bottom-4">
+                        <VoiceInputButton onTranscript={(txt) => setTypeOrDest(prev => prev ? prev + ' ' + txt : txt)} simple />
+                    </div>
+                </div>
              </>
            )}
 
@@ -393,12 +407,17 @@ const LifestyleView: React.FC<LifestyleViewProps> = ({
                         </select>
                      </div>
                  </div>
-                 <textarea 
-                    className="w-full mb-2 p-2 rounded-xl border border-r-border text-sm bg-white outline-none min-h-[100px]" 
-                    placeholder="写点什么..." 
-                    value={typeOrDest} 
-                    onChange={e => setTypeOrDest(e.target.value)} 
-                 />
+                 <div className="relative">
+                    <textarea 
+                        className="w-full mb-2 p-2 rounded-xl border border-r-border text-sm bg-white outline-none min-h-[100px] pr-8" 
+                        placeholder="写点什么..." 
+                        value={typeOrDest} 
+                        onChange={e => setTypeOrDest(e.target.value)} 
+                    />
+                    <div className="absolute right-2 bottom-4">
+                         <VoiceInputButton onTranscript={(txt) => setTypeOrDest(prev => prev ? prev + '\n' + txt : txt)} simple />
+                    </div>
+                 </div>
               </>
            )}
 

@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import { Wand2, Loader2 } from 'lucide-react';
 import { generateDailyPlan } from '../services/geminiService';
 import { Task } from '../types';
+import VoiceInputButton from './ui/VoiceInputButton';
 
 interface PlanGeneratorProps {
   currentDate: string;
@@ -29,6 +31,10 @@ const PlanGenerator: React.FC<PlanGeneratorProps> = ({ currentDate, onPlanGenera
     }
   };
 
+  const handleVoiceInput = (text: string) => {
+    setInput(prev => prev ? prev + '，' + text : text);
+  };
+
   return (
     <div className="space-y-4">
       <div className="bg-r-card p-4 rounded-xl border border-r-border text-sm text-r-main">
@@ -42,13 +48,18 @@ const PlanGenerator: React.FC<PlanGeneratorProps> = ({ currentDate, onPlanGenera
         </p>
       </div>
 
-      <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        className="w-full h-32 p-3 rounded-xl border border-r-border focus:border-r-primary focus:ring-2 focus:ring-r-light outline-none resize-none text-r-main placeholder:text-r-muted bg-white"
-        placeholder="今天有什么计划？"
-        autoFocus
-      />
+      <div className="relative">
+        <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="w-full h-32 p-3 rounded-xl border border-r-border focus:border-r-primary focus:ring-2 focus:ring-r-light outline-none resize-none text-r-main placeholder:text-r-muted bg-white pr-10"
+            placeholder="今天有什么计划？"
+            autoFocus
+        />
+        <div className="absolute bottom-3 right-3">
+             <VoiceInputButton onTranscript={handleVoiceInput} simple />
+        </div>
+      </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
 

@@ -1,6 +1,6 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Check, Image as ImageIcon, RotateCcw, Palette, Upload, Download, FileJson, Trash2, Bell, Key, Eye, EyeOff } from 'lucide-react';
+import { Check, Image as ImageIcon, RotateCcw, Palette, Upload, Download, FileJson, Trash2, Bell, Key, Eye, EyeOff, Music } from 'lucide-react';
 import { ThemeType } from '../../types';
 import { getStoredApiKey } from '../../services/storageService';
 
@@ -10,6 +10,9 @@ interface SettingsViewProps {
   hasBackgroundImage: boolean;
   onBackgroundUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onResetBackground: () => void;
+  hasCustomMusic: boolean;
+  onMusicUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onResetMusic: () => void;
   onExportData: () => void;
   onImportData: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onResetData: () => void;
@@ -24,6 +27,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({
   hasBackgroundImage,
   onBackgroundUpload,
   onResetBackground,
+  hasCustomMusic,
+  onMusicUpload,
+  onResetMusic,
   onExportData,
   onImportData,
   onResetData,
@@ -32,6 +38,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({
   onSaveApiKey
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const musicInputRef = useRef<HTMLInputElement>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
   
   const [apiKeyInput, setApiKeyInput] = useState('');
@@ -164,7 +171,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       </div>
 
-      {/* Background Section */}
+      {/* Background Image Section */}
       <div className="bear-card p-5 bg-white">
         <div className="flex items-center gap-2 mb-4 text-r-main">
           <ImageIcon size={20} className="text-r-primary" />
@@ -196,6 +203,48 @@ const SettingsView: React.FC<SettingsViewProps> = ({
             >
               <RotateCcw size={18} />
               恢复默认背景
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Background Music Section */}
+      <div className="bear-card p-5 bg-white">
+        <div className="flex items-center gap-2 mb-4 text-r-main">
+          <Music size={20} className="text-r-primary" />
+          <h3 className="font-bold text-lg">背景音乐</h3>
+        </div>
+
+        <div className="space-y-3">
+           <div className="flex items-center gap-2 p-3 rounded-xl bg-r-light/50 border border-r-border text-sm text-r-main">
+              <span className={`w-2 h-2 rounded-full ${hasCustomMusic ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+              状态: <span className="font-bold">{hasCustomMusic ? '已设置自定义音乐' : '未设置 (静音)'}</span>
+           </div>
+
+          <button
+            onClick={() => musicInputRef.current?.click()}
+            className="w-full py-4 border-2 border-dashed border-r-border rounded-xl flex flex-col items-center justify-center gap-2 text-r-sub hover:bg-r-light hover:border-r-primary transition-colors bg-gray-50"
+          >
+            <Upload size={24} />
+            <span className="font-bold text-sm">上传 MP3 音乐</span>
+            <span className="text-xs opacity-70">推荐小于 15MB</span>
+          </button>
+          
+          <input
+            ref={musicInputRef}
+            type="file"
+            accept="audio/mp3, audio/mpeg"
+            className="hidden"
+            onChange={onMusicUpload}
+          />
+
+          {hasCustomMusic && (
+            <button
+              onClick={onResetMusic}
+              className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-red-500 font-bold bg-white border border-red-100 hover:bg-red-50 transition-colors shadow-sm"
+            >
+              <Trash2 size={18} />
+              删除当前音乐
             </button>
           )}
         </div>
@@ -247,7 +296,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* Info Section */}
       <div className="text-center mt-8 opacity-50">
-        <p className="text-xs text-r-sub">Rilakkuma Life Planner v1.2</p>
+        <p className="text-xs text-r-sub">Rilakkuma Life Planner v1.3</p>
         <p className="text-[10px] text-r-muted mt-1">Make every day relaxed & productive.</p>
       </div>
     </div>
